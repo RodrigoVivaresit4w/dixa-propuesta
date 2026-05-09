@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIXA — Deal Intelligence Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --primary:#0a0e27;--secondary:#1a1f3a;--accent:#c9a961;--accent-light:#d4b896;
+            --text:#ffffff;--muted:#a8aec1;--border:#2a2f44;
+            --green:#10b981;--yellow:#f59e0b;--red:#ef4444;--blue:#60a5fa;--purple:#a78bfa;
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0a0e27 0%,#1a1f3a 100%);color:var(--text);min-height:100vh;line-height:1.6}
+
+        /* HEADER */
+        header{padding:0;border-bottom:1px solid var(--border);background:rgba(10,14,39,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:200}
+        .header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px}
+        .logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px}
+        .logo-sub{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+
+        /* PHASE TABS */
+        .phase-tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:4px}
+        .tab-btn{padding:8px 20px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;border-radius:7px;transition:all .25s;font-family:'Inter',sans-serif;white-space:nowrap}
+        .tab-btn:hover{color:var(--text)}
+        .tab-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#0a0e27;font-weight:700}
+        .tab-btn .phase-badge{font-size:10px;opacity:.7;margin-left:4px}
+
+        .container{max-width:1400px;margin:0 auto;padding:0 24px}
+
+        /* SEARCH */
+        .search-section{padding:48px 0 40px;text-align:center}
+        .search-section h1{font-family:'Playfair Display',serif;font-size:40px;margin-bottom:10px}
+        .search-section p{font-size:15px;color:var(--muted);margin-bottom:32px;max-width:520px;margin-left:auto;margin-right:auto}
+        .search-row{display:flex;gap:10px;max-width:640px;margin:0 auto 14px}
+        input[type=text]{flex:1;padding:13px 18px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;transition:all .3s}
+        input[type=text]::placeholder{color:var(--muted)}
+        input[type=text]:focus{outline:none;border-color:var(--accent);background:rgba(201,169,97,.08);box-shadow:0 0 0 3px rgba(201,169,97,.1)}
+        .btn{padding:13px 28px;background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#0a0e27;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .3s;text-transform:uppercase;letter-spacing:.5px;font-family:'Inter',sans-serif}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(201,169,97,.25)}
+        .btn-outline{background:transparent;color:var(--accent);border:1px solid rgba(201,169,97,.4)}
+        .btn-outline:hover{background:rgba(201,169,97,.1)}
+        .btn-sm{padding:8px 16px;font-size:12px}
+
+        /* LOADING */
+        .loading{display:none;text-align:center;padding:28px;color:var(--accent)}
+        .loading.active{display:block}
+        .spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* PANELS */
+        .panel{display:none;padding:0 0 60px}
+        .panel.active{display:block}
+
+        /* CARDS */
+        .card{background:rgba(26,31,58,.8);border:1px solid var(--border);border-radius:12px;padding:28px;backdrop-filter:blur(8px);transition:border-color .3s}
+        .card:hover{border-color:var(--accent)}
+        .card h2{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+
+        /* GRIDS */
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:32px}
+        .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:32px}
+        .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:32px}
+
+        .address-bar{background:rgba(201,169,97,.08);border:1px solid rgba(201,169,97,.25);border-left:3px solid var(--accent);padding:14px 20px;border-radius:8px;margin-bottom:28px;font-size:15px;color:var(--accent)}
+
+        /* STAT CARD */
+        .stat-card{background:rgba(26,31,58,.8);border:1px solid var(--border);padding:24px;border-radius:12px;transition:all .3s}
+        .stat-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .stat-card h3{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px}
+        .stat-val{font-size:32px;font-weight:700;color:var(--accent);margin-bottom:6px}
+        .stat-sub{font-size:12px;color:var(--muted)}
+        .badge{display:inline-block;padding:4px 10px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:10px}
+        .b-green{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+        .b-yellow{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+        .b-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+        .b-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.3)}
+
+        /* METRICS */
+        .metric{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(42,47,68,.5);font-size:13px}
+        .metric:last-child{border-bottom:none}
+        .metric .lbl{color:var(--muted)}
+        .metric .val{font-weight:600}
+        .metric.total{border-top:2px solid var(--accent)!important;padding-top:14px!important;margin-top:12px!important}
+        .metric.total .lbl{font-weight:700;color:var(--text)}
+        .metric.total .val{color:var(--accent);font-size:15px}
+
+        /* TABLE */
+        table{width:100%;border-collapse:collapse;margin-top:16px}
+        thead{border-bottom:1px solid var(--border)}
+        th{padding:10px 0;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600}
+        td{padding:12px 0;border-bottom:1px solid rgba(42,47,68,.5);font-size:13px}
+        tr:last-child td{border-bottom:none}
+
+        /* KPI */
+        .kpi-card{background:rgba(26,31,58,.8);border:1px solid var(--border);padding:32px 24px;border-radius:12px;text-align:center;transition:all .3s}
+        .kpi-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .kpi-card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:18px}
+        .kpi-val{font-size:48px;font-weight:700;margin-bottom:16px}
+        .kpi-positive{color:var(--green)}
+        .kpi-warning{color:var(--yellow)}
+        .kpi-insight{background:rgba(42,47,68,.5);padding:12px;border-radius:8px;font-size:12px;color:var(--muted);line-height:1.55}
+
+        /* RECOMMENDATION */
+        .rec-card{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(201,169,97,.08));border:1px solid rgba(16,185,129,.3);border-left:4px solid var(--green);padding:28px;border-radius:12px;margin-bottom:28px}
+        .rec-card h2{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:12px}
+        .rec-status{display:inline-block;padding:7px 14px;background:var(--green);color:#0a0e27;border-radius:4px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+        .rec-text{color:var(--muted);font-size:14px;line-height:1.75}
+
+        /* ════ PHASE 2 STYLES ════ */
+        /* Fake Map */
+        .map-container{background:rgba(10,14,39,.8);border:1px solid var(--border);border-radius:12px;height:320px;position:relative;overflow:hidden;margin-bottom:32px}
+        .map-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(96,165,250,.04) 0%,transparent 70%)}
+        .map-grid{position:absolute;inset:0;opacity:.08;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px}
+        .map-label{position:absolute;top:16px;left:16px;font-size:12px;color:var(--muted);background:rgba(10,14,39,.8);padding:6px 12px;border-radius:6px;border:1px solid var(--border)}
+        .map-dot{position:absolute;border-radius:50%;transition:transform .3s}
+        .map-dot:hover{transform:scale(1.4);z-index:10}
+        .map-dot::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:rgba(10,14,39,.95);border:1px solid var(--border);padding:4px 8px;border-radius:4px;font-size:11px;white-space:nowrap;pointer-events:none;color:var(--text)}
+        .map-legend{position:absolute;bottom:16px;right:16px;background:rgba(10,14,39,.85);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;display:flex;flex-direction:column;gap:6px}
+        .leg-row{display:flex;align-items:center;gap:8px;color:var(--muted)}
+        .leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+        /* Scoring */
+        .score-bar-wrap{margin-bottom:14px}
+        .score-bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+        .score-bar-label .name{color:var(--muted)}
+        .score-bar-label .val{font-weight:600}
+        .score-bar-bg{height:8px;background:rgba(42,47,68,.8);border-radius:4px;overflow:hidden}
+        .score-bar-fill{height:100%;border-radius:4px;transition:width 1s ease}
+
+        /* ZIP table */
+        .zip-rank{display:flex;flex-direction:column;gap:8px}
+        .zip-row{display:flex;align-items:center;gap:12px;background:rgba(26,31,58,.6);border:1px solid var(--border);border-radius:8px;padding:12px 16px;transition:all .3s}
+        .zip-row:hover{border-color:var(--accent)}
+        .zip-rank-num{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--accent);min-width:28px}
+        .zip-code{font-size:14px;font-weight:600;min-width:60px}
+        .zip-meta{flex:1;font-size:12px;color:var(--muted)}
+        .zip-score{font-size:20px;font-weight:700}
+
+        /* Alert card */
+        .alert-item{display:flex;align-items:flex-start;gap:14px;background:rgba(26,31,58,.6);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .3s}
+        .alert-item:hover{border-color:var(--accent)}
+        .alert-icon{font-size:20px;flex-shrink:0}
+        .alert-title{font-size:14px;font-weight:600;margin-bottom:3px}
+        .alert-meta{font-size:12px;color:var(--muted)}
+
+        /* ════ PHASE 3 STYLES ════ */
+        /* Chat */
+        .chat-wrap{background:rgba(10,14,39,.7);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px}
+        .chat-header{background:rgba(26,31,58,.8);padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+        .chat-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-light));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+        .chat-header-info h4{font-size:14px;font-weight:600}
+        .chat-header-info p{font-size:11px;color:var(--green)}
+        .chat-messages{padding:20px;min-height:280px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+        .msg{max-width:80%;display:flex;gap:10px;align-items:flex-end}
+        .msg.user{align-self:flex-end;flex-direction:row-reverse}
+        .msg-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.55}
+        .msg.bot .msg-bubble{background:rgba(42,47,68,.8);border:1px solid var(--border);border-bottom-left-radius:4px}
+        .msg.user .msg-bubble{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#0a0e27;border-bottom-right-radius:4px;font-weight:500}
+        .msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px}
+        .msg.bot .msg-avatar{background:rgba(201,169,97,.2)}
+        .msg.user .msg-avatar{background:rgba(42,47,68,.8)}
+        .typing{display:flex;gap:4px;align-items:center;padding:10px 14px}
+        .typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+        .typing span:nth-child(2){animation-delay:.2s}
+        .typing span:nth-child(3){animation-delay:.4s}
+        @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+        .chat-input-row{display:flex;gap:10px;padding:16px 20px;border-top:1px solid var(--border);background:rgba(26,31,58,.4)}
+        .chat-input{flex:1;padding:10px 16px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif}
+        .chat-input:focus{outline:none;border-color:var(--accent)}
+        .chat-suggestions{padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:rgba(26,31,58,.3)}
+        .sugg{padding:6px 12px;background:rgba(201,169,97,.08);border:1px solid rgba(201,169,97,.2);border-radius:16px;font-size:11px;color:var(--accent);cursor:pointer;transition:all .2s}
+        .sugg:hover{background:rgba(201,169,97,.15)}
+
+        /* Report preview */
+        .report-preview{background:rgba(26,31,58,.8);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:32px}
+        .report-preview-header{background:rgba(42,47,68,.5);padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+        .report-preview-body{padding:24px;font-size:13px;color:var(--muted);line-height:1.7}
+        .report-section{margin-bottom:16px}
+        .report-section h4{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:6px}
+        .report-line{height:8px;background:rgba(42,47,68,.8);border-radius:4px;margin-bottom:6px}
+
+        /* Monitor */
+        .monitor-item{display:flex;align-items:center;gap:14px;background:rgba(26,31,58,.6);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;transition:all .3s}
+        .monitor-item:hover{border-color:rgba(201,169,97,.3)}
+        .monitor-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        .monitor-zip{font-size:15px;font-weight:700;min-width:64px}
+        .monitor-info{flex:1;font-size:12px;color:var(--muted)}
+        .monitor-status{font-size:12px;font-weight:600}
+
+        /* Disclaimer */
+        .disclaimer{background:rgba(26,31,58,.6);border:1px solid var(--border);border-left:3px solid var(--yellow);padding:18px 22px;border-radius:8px;margin-top:32px;font-size:12px;color:var(--muted);line-height:1.65}
+        .disclaimer strong{color:var(--text)}
+
+        @media(max-width:768px){
+            .grid-3,.grid-2,.grid-4{grid-template-columns:1fr}
+            .phase-tabs{flex-wrap:wrap}
+            .search-row{flex-direction:column}
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div>
+            <div class="logo">DIXA</div>
+            <div class="logo-sub">Deal Intelligence Platform</div>
+        </div>
+        <div class="phase-tabs">
+            <button class="tab-btn active" onclick="switchPhase(1,this)">⚡ Fase 1 <span class="phase-badge">MVP</span></button>
+            <button class="tab-btn" onclick="switchPhase(2,this)">🗺️ Fase 2 <span class="phase-badge">Mercado</span></button>
+            <button class="tab-btn" onclick="switchPhase(3,this)">🤖 Fase 3 <span class="phase-badge">IA</span></button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- SEARCH (shared) -->
+    <div class="search-section">
+        <h1 id="phaseTitle">Deal Screening Dashboard</h1>
+        <p id="phaseDesc">Evaluación rápida de viabilidad · ARV · Comps · Go/No-Go automático</p>
+        <div class="search-row">
+            <input type="text" id="addressInput" placeholder="Ingresa dirección del predio...">
+            <button class="btn" onclick="runAnalysis()">Analizar</button>
+        </div>
+        <div class="loading" id="loading"><div class="spinner"></div><p id="loadingText">Recolectando datos...</p></div>
+    </div>
+
+    <!-- ═══════════════ PHASE 1 ═══════════════ -->
+    <div id="panel1" class="panel active" style="display:none">
+        <div class="address-bar">📍 <span id="addr1"></span></div>
+
+        <div class="grid-3">
+            <div class="stat-card">
+                <h3>ARV Proyectado</h3>
+                <div class="stat-val" id="p1arv">$875K</div>
+                <div class="stat-sub">Valor del producto terminado</div>
+                <div class="badge b-green">✓ HouseCanary API</div>
+            </div>
+            <div class="stat-card">
+                <h3>Renta Mensual Est.</h3>
+                <div class="stat-val" id="p1rent">$4.2K</div>
+                <div class="stat-sub">Yield anual estimado</div>
+                <div class="badge b-green">✓ Validado</div>
+            </div>
+            <div class="stat-card">
+                <h3>Costo de Obra</h3>
+                <div class="stat-val" id="p1obra">$350K</div>
+                <div class="stat-sub">$250/sqft — high-end FL</div>
+                <div class="badge b-yellow">⚠ Referencial RSMeans</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>💰 Análisis Financiero</h2>
+                <div class="metric"><span class="lbl">ARV Proyectado</span><span class="val" id="p1arv2">$875,000</span></div>
+                <div class="metric"><span class="lbl">Costo Terreno</span><span class="val" id="p1land">$300,000</span></div>
+                <div class="metric"><span class="lbl">Costo Obra</span><span class="val" id="p1obra2">$350,000</span></div>
+                <div class="metric"><span class="lbl">Soft Costs (15%)</span><span class="val" id="p1soft">$87,500</span></div>
+                <div class="metric"><span class="lbl">Carry & Contingencia (10%)</span><span class="val" id="p1carry">$73,750</span></div>
+                <div class="metric total"><span class="lbl">Margen Bruto</span><span class="val" id="p1margin">$63,750</span></div>
+            </div>
+            <div class="card">
+                <h2>📊 Comparables Recientes</h2>
+                <table>
+                    <thead><tr><th>Dirección</th><th>Precio</th><th>$/sqft</th><th>Días</th></tr></thead>
+                    <tbody id="p1compsBody">
+                        <tr><td>1245 Ocean Ave</td><td>$825K</td><td>$275</td><td>28</td></tr>
+                        <tr><td>1260 Waterfront Dr</td><td>$910K</td><td>$298</td><td>35</td></tr>
+                        <tr><td>1290 Beach Rd</td><td>$795K</td><td>$252</td><td>42</td></tr>
+                        <tr style="border-top:1px solid var(--border)">
+                            <td style="color:var(--accent);font-weight:600">Promedio</td>
+                            <td style="color:var(--accent);font-weight:600">$843K</td>
+                            <td style="color:var(--accent);font-weight:600">$275</td>
+                            <td style="color:var(--accent);font-weight:600">35d</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="kpi-card">
+                <h3>Margen de Venta</h3>
+                <div class="kpi-val kpi-positive" id="p1marginPct">7.3%</div>
+                <div class="kpi-insight">Por encima del umbral mínimo del 5% para proyectos high-end. Estructura de costos viable con margen para optimización.</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Velocidad de Absorción</h3>
+                <div class="kpi-val kpi-warning">32 días</div>
+                <div class="kpi-insight">Comparables cierran en ~35 días. Mercado estable con buena rotación en el segmento high-end de Hallandale.</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px">
+            <h2>🏗️ Oferta Futura en el ZIP</h2>
+            <div class="grid-4" style="margin-bottom:16px">
+                <div style="text-align:center;padding:16px;background:rgba(10,14,39,.4);border-radius:8px">
+                    <div id="p1permTotal" style="font-size:28px;font-weight:700;color:var(--accent)">14</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Permisos aprobados (12m)</div>
+                </div>
+                <div style="text-align:center;padding:16px;background:rgba(10,14,39,.4);border-radius:8px">
+                    <div id="p1permInProgress" style="font-size:28px;font-weight:700;color:var(--blue)">7</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">En construcción</div>
+                </div>
+                <div style="text-align:center;padding:16px;background:rgba(10,14,39,.4);border-radius:8px">
+                    <div id="p1permPlanning" style="font-size:28px;font-weight:700;color:var(--muted)">3</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">En planeación</div>
+                </div>
+                <div style="text-align:center;padding:16px;background:rgba(10,14,39,.4);border-radius:8px">
+                    <div id="p1permHighEnd" style="font-size:28px;font-weight:700;color:var(--yellow)">2</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Competencia directa</div>
+                </div>
+            </div>
+            <div style="background:rgba(42,47,68,.4);padding:14px 18px;border-radius:8px;font-size:13px;color:var(--muted)">
+                <strong style="color:var(--text)">⚠️ Competencia Moderada:</strong> Actividad presente pero el submercado high-end no está saturado. Propiedades similares rotan rápido.
+            </div>
+        </div>
+
+        <div class="rec-card">
+            <h2>✅ Recomendación Final</h2>
+            <div id="p1recStatus" class="rec-status">GO — Viable para Análisis Detallado</div>
+            <div id="p1recText" class="rec-text">
+                El proyecto cumple criterios de viabilidad rápida: <strong>margen 7.3%</strong>, mercado con velocidad normal y competencia moderada.
+                <br><br><strong>Próximo paso:</strong> Validar terreno, obtener tasación profesional y cotizaciones de obra con contratistas locales.
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>📋 Fuentes:</strong> ARV y renta vía HouseCanary API · Comparables de Zillow/Redfin · Costos estimados con RSMeans + histórico Dixa · Pipeline de permisos de registros públicos de Broward County.<br>
+            <strong>⚠️ Disclaimer:</strong> Análisis referencial. Validar con profesionales locales antes de tomar decisiones de inversión.
+        </div>
+    </div>
+
+    <!-- ═══════════════ PHASE 2 ═══════════════ -->
+    <div id="panel2" class="panel" style="display:none">
+        <div class="address-bar">📍 <span id="addr2"></span> · <span id="p2zipBadge" style="color:var(--blue)">ZIP 33009</span> · Análisis de mercado completo</div>
+
+        <!-- Mapa simulado -->
+        <div style="margin-bottom:24px">
+            <div class="card" style="margin-bottom:0;padding:0;overflow:hidden">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+                    <h2 style="margin-bottom:0">🗺️ Mapa de Actividad · Hallandale Beach</h2>
+                    <div style="display:flex;gap:8px">
+                        <span class="badge b-blue">Heatmap Permisos</span>
+                        <span class="badge b-green">Comps activos</span>
+                    </div>
+                </div>
+                <div class="map-container" style="border-radius:0;border:none;height:340px">
+                    <div class="map-bg"></div>
+                    <div class="map-grid"></div>
+                    <div class="map-label">📍 1255 Ocean Drive · ZIP 33009</div>
+
+                    <!-- Target property -->
+                    <div class="map-dot" style="width:18px;height:18px;background:var(--accent);left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 6px rgba(201,169,97,.2)" data-tip="TARGET: $875K ARV"></div>
+
+                    <!-- Comps -->
+                    <div class="map-dot" style="width:12px;height:12px;background:var(--green);left:44%;top:42%" data-tip="Comp: $825K · 28d"></div>
+                    <div class="map-dot" style="width:12px;height:12px;background:var(--green);left:55%;top:38%" data-tip="Comp: $910K · 35d"></div>
+                    <div class="map-dot" style="width:12px;height:12px;background:var(--green);left:58%;top:54%" data-tip="Comp: $795K · 42d"></div>
+                    <div class="map-dot" style="width:12px;height:12px;background:var(--green);left:40%;top:57%" data-tip="Comp: $860K · 29d"></div>
+                    <div class="map-dot" style="width:12px;height:12px;background:var(--green);left:62%;top:46%" data-tip="Comp: $895K · 38d"></div>
+
+                    <!-- Permits -->
+                    <div class="map-dot" style="width:10px;height:10px;background:var(--blue);left:47%;top:34%" data-tip="Permiso aprobado · Oct 2024"></div>
+                    <div class="map-dot" style="width:10px;height:10px;background:var(--blue);left:53%;top:44%" data-tip="En construcción"></div>
+                    <div class="map-dot" style="width:10px;height:10px;background:var(--blue);left:42%;top:48%" data-tip="Permiso aprobado · Dic 2024"></div>
+                    <div class="map-dot" style="width:10px;height:10px;background:var(--blue);left:60%;top:60%" data-tip="En construcción"></div>
+                    <div class="map-dot" style="width:10px;height:10px;background:var(--blue);left:36%;top:43%" data-tip="En planeación"></div>
+
+                    <!-- Competitors -->
+                    <div class="map-dot" style="width:14px;height:14px;background:var(--yellow);left:52%;top:62%;border:2px solid rgba(245,158,11,.4)" data-tip="Competidor high-end activo"></div>
+                    <div class="map-dot" style="width:14px;height:14px;background:var(--yellow);left:38%;top:52%;border:2px solid rgba(245,158,11,.4)" data-tip="Competidor high-end activo"></div>
+
+                    <div class="map-legend">
+                        <div class="leg-row"><div class="leg-dot" style="background:var(--accent)"></div>Predio analizado</div>
+                        <div class="leg-row"><div class="leg-dot" style="background:var(--green)"></div>Comparables</div>
+                        <div class="leg-row"><div class="leg-dot" style="background:var(--blue)"></div>Permisos/Obra</div>
+                        <div class="leg-row"><div class="leg-dot" style="background:var(--yellow)"></div>Competencia</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Scoring de submercado -->
+            <div class="card">
+                <h2>📈 Scoring de Submercado · ZIP 33009</h2>
+                <div style="margin-bottom:8px">
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-label"><span class="name">Spread ARV vs. Costo</span><span id="sb-spread-val" class="val" style="color:var(--green)">82 / 100</span></div>
+                        <div class="score-bar-bg"><div id="sb-spread-fill" class="score-bar-fill" style="width:82%;background:var(--green)"></div></div>
+                    </div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-label"><span class="name">Velocidad de Absorción</span><span id="sb-absorption-val" class="val" style="color:var(--green)">75 / 100</span></div>
+                        <div class="score-bar-bg"><div id="sb-absorption-fill" class="score-bar-fill" style="width:75%;background:var(--green)"></div></div>
+                    </div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-label"><span class="name">Saturación de Pipeline</span><span id="sb-saturation-val" class="val" style="color:var(--yellow)">61 / 100</span></div>
+                        <div class="score-bar-bg"><div id="sb-saturation-fill" class="score-bar-fill" style="width:61%;background:var(--yellow)"></div></div>
+                    </div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-label"><span class="name">Estabilidad de Precios</span><span id="sb-stability-val" class="val" style="color:var(--green)">78 / 100</span></div>
+                        <div class="score-bar-bg"><div id="sb-stability-fill" class="score-bar-fill" style="width:78%;background:var(--green)"></div></div>
+                    </div>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-label"><span class="name">Competencia Directa</span><span id="sb-competition-val" class="val" style="color:var(--yellow)">65 / 100</span></div>
+                        <div class="score-bar-bg"><div id="sb-competition-fill" class="score-bar-fill" style="width:65%;background:var(--yellow)"></div></div>
+                    </div>
+                </div>
+                <div style="padding:14px;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(201,169,97,.08));border:1px solid rgba(16,185,129,.2);border-radius:8px;text-align:center">
+                    <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Score Global del ZIP</div>
+                    <div id="p2score" style="font-size:40px;font-weight:700;color:var(--green)">74</div>
+                    <div id="p2scoreLabel" style="font-size:12px;color:var(--muted)">Mercado favorable · Apto para desarrollo</div>
+                </div>
+            </div>
+
+            <!-- Análisis de absorción -->
+            <div class="card">
+                <h2>⏱️ Análisis de Absorción Histórica</h2>
+                <table>
+                    <thead><tr><th>ZIP</th><th>Promedio</th><th>Tendencia</th><th>Inventario</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>33009</strong></td><td style="color:var(--green)">32 días</td><td>📉 Bajando</td><td>4.2 meses</td></tr>
+                        <tr><td>33020</td><td>41 días</td><td>➡️ Estable</td><td>5.8 meses</td></tr>
+                        <tr><td>33023</td><td>55 días</td><td>📈 Subiendo</td><td>7.1 meses</td></tr>
+                        <tr><td>33312</td><td>38 días</td><td>📉 Bajando</td><td>4.9 meses</td></tr>
+                        <tr><td>33021</td><td>28 días</td><td>📉 Bajando</td><td>3.6 meses</td></tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:16px;padding:12px;background:rgba(42,47,68,.4);border-radius:8px;font-size:12px;color:var(--muted)">
+                    💡 El ZIP <strong style="color:var(--text)">33009</strong> está en la parte alta del ranking de absorción con tendencia bajista (favorable). Menor inventario relativo que los ZIPs circundantes.
+                </div>
+            </div>
+        </div>
+
+        <!-- Ranking de ZIPs -->
+        <div class="card" style="margin-bottom:24px">
+            <h2>🏆 Ranking de ZIPs · Sur de Florida · High-End</h2>
+            <div class="zip-rank" id="zipRankList">
+                <div class="zip-row">
+                    <div class="zip-rank-num">#1</div>
+                    <div class="zip-code">33021</div>
+                    <div class="zip-meta">Hollywood · Spread alto · Absorción rápida · Pipeline bajo</div>
+                    <div class="zip-score" style="color:var(--green)">89</div>
+                    <span class="badge b-green">🔥 Hot</span>
+                </div>
+                <div class="zip-row" style="border-color:rgba(201,169,97,.4)">
+                    <div class="zip-rank-num" style="color:var(--blue)">#2</div>
+                    <div class="zip-code">33009</div>
+                    <div class="zip-meta">Hallandale Beach · TARGET · Spread positivo · Competencia moderada</div>
+                    <div class="zip-score" style="color:var(--green)">74</div>
+                    <span class="badge b-blue">⭐ Seleccionado</span>
+                </div>
+                <div class="zip-row">
+                    <div class="zip-rank-num" style="color:var(--muted)">#3</div>
+                    <div class="zip-code">33312</div>
+                    <div class="zip-meta">Ft. Lauderdale SW · Equilibrado · Absorción buena</div>
+                    <div class="zip-score" style="color:var(--yellow)">69</div>
+                    <span class="badge b-yellow">Neutro</span>
+                </div>
+                <div class="zip-row">
+                    <div class="zip-rank-num" style="color:var(--muted)">#4</div>
+                    <div class="zip-code">33020</div>
+                    <div class="zip-meta">Hollywood N · Absorción estable · Spread justo</div>
+                    <div class="zip-score" style="color:var(--yellow)">62</div>
+                    <span class="badge b-yellow">Neutro</span>
+                </div>
+                <div class="zip-row">
+                    <div class="zip-rank-num" style="color:var(--muted)">#5</div>
+                    <div class="zip-code">33023</div>
+                    <div class="zip-meta">Miramar · Absorción lenta · Pipeline en crecimiento</div>
+                    <div class="zip-score" style="color:var(--red)">41</div>
+                    <span class="badge" style="background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)">Evitar</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline de permisos -->
+        <div class="card" style="margin-bottom:24px">
+            <h2>📋 Pipeline Detallado de Permisos · ZIP 33009</h2>
+            <table>
+                <thead><tr><th>Dirección</th><th>Tipo</th><th>Estado</th><th>Aprobado</th><th>ARV Est.</th><th>Impacto</th></tr></thead>
+                <tbody id="permitsBody">
+                    <tr><td>1180 Ocean Dr</td><td>SFH High-end</td><td><span class="badge b-blue">En Obra</span></td><td>Ago 2024</td><td>~$920K</td><td style="color:var(--yellow)">Competencia directa</td></tr>
+                    <tr><td>1320 Waterfront</td><td>SFH High-end</td><td><span class="badge b-yellow">En Obra</span></td><td>Sep 2024</td><td>~$855K</td><td style="color:var(--yellow)">Competencia directa</td></tr>
+                    <tr><td>1095 Beach Rd</td><td>SFH Standard</td><td><span class="badge b-green">Aprobado</span></td><td>Nov 2024</td><td>~$620K</td><td style="color:var(--green)">Segmento diferente</td></tr>
+                    <tr><td>1430 SE 12th Ave</td><td>Duplex</td><td><span class="badge b-green">Aprobado</span></td><td>Dic 2024</td><td>~$480K</td><td style="color:var(--green)">No compite</td></tr>
+                    <tr><td>1065 Ocean Dr</td><td>SFH High-end</td><td><span class="badge b-purple">Planeación</span></td><td>Pendiente</td><td>~$900K</td><td style="color:var(--muted)">Monitorear</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="disclaimer">
+            <strong>📋 Fuentes Fase 2:</strong> Datos de permisos de Broward County Building Division (datos públicos) · Scoring calculado con algoritmo propio Dixa · Análisis de absorción basado en MLS histórico 24 meses.
+        </div>
+    </div>
+
+    <!-- ═══════════════ PHASE 3 ═══════════════ -->
+    <div id="panel3" class="panel" style="display:none">
+        <div class="address-bar">🤖 DIXA Intelligence · IA activa · Modelos entrenados con datos de FL</div>
+
+        <div class="grid-2" style="margin-bottom:32px">
+
+            <!-- Chat -->
+            <div style="grid-column:1 / -1">
+                <div class="chat-wrap">
+                    <div class="chat-header">
+                        <div class="chat-avatar">🤖</div>
+                        <div class="chat-header-info">
+                            <h4>DIXA AI — Deal Assistant</h4>
+                            <p>● En línea · Entrenado con 1,200+ deals de FL</p>
+                        </div>
+                    </div>
+                    <div class="chat-suggestions">
+                        <span class="sugg" onclick="sendSugg(this)">¿Cuál es el spread estimado?</span>
+                        <span class="sugg" onclick="sendSugg(this)">¿Cuántos permisos en este ZIP los últimos 12 meses?</span>
+                        <span class="sugg" onclick="sendSugg(this)">¿Es buen momento para entrar?</span>
+                        <span class="sugg" onclick="sendSugg(this)">¿Qué riesgo tiene este deal?</span>
+                        <span class="sugg" onclick="sendSugg(this)">Genera un resumen ejecutivo</span>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="msg bot">
+                            <div class="msg-avatar">🤖</div>
+                            <div class="msg-bubble">Hola, Hernán. Tengo cargado el análisis de <strong>1255 Ocean Drive, Hallandale Beach</strong>. ¿Qué querés saber del deal?</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Preguntale al deal..." onkeypress="if(event.key==='Enter')sendChat()">
+                        <button class="btn btn-sm" onclick="sendChat()">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Report preview -->
+            <div>
+                <div class="report-preview">
+                    <div class="report-preview-header">
+                        <div>
+                            <div style="font-size:14px;font-weight:600">📑 Reporte de Viabilidad — Auto-generado</div>
+                            <div style="font-size:11px;color:var(--muted)">1255 Ocean Drive · Hallandale Beach · <span id="reportDate"></span></div>
+                        </div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn btn-outline btn-sm" onclick="generateReport()">Generar PDF</button>
+                        </div>
+                    </div>
+                    <div class="report-preview-body">
+                        <div class="report-section">
+                            <h4>Resumen Ejecutivo</h4>
+                            <div class="report-line" style="width:100%"></div>
+                            <div class="report-line" style="width:85%"></div>
+                            <div class="report-line" style="width:70%"></div>
+                        </div>
+                        <div class="report-section">
+                            <h4>Análisis Financiero · ARV $875K · Margen 7.3%</h4>
+                            <div class="report-line" style="width:100%"></div>
+                            <div class="report-line" style="width:60%"></div>
+                        </div>
+                        <div class="report-section">
+                            <h4>Scoring de Mercado · ZIP 33009 · Score 74/100</h4>
+                            <div class="report-line" style="width:100%"></div>
+                            <div class="report-line" style="width:80%"></div>
+                            <div class="report-line" style="width:55%"></div>
+                        </div>
+                        <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+                            <div style="width:12px;height:12px;border-radius:50%;background:var(--green)"></div>
+                            <div style="font-size:12px;color:var(--green);font-weight:600">Recomendación: GO — Viable para inversión</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportMsg" style="display:none;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(201,169,97,.08));border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:14px 18px;font-size:13px;color:var(--green)">
+                    ✅ Reporte generado exitosamente. En producción se descargaría como PDF.
+                </div>
+            </div>
+
+            <!-- Monitor de ZIPs -->
+            <div>
+                <div class="card">
+                    <h2>🔔 Monitoreo de ZIPs Activo</h2>
+                    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Alertas automáticas cuando hay nuevos permisos o cambios de precio en ZIPs watchlisted.</div>
+
+                    <div class="monitor-item">
+                        <div class="monitor-dot" style="background:var(--green)"></div>
+                        <div class="monitor-zip">33009</div>
+                        <div class="monitor-info">Hallandale Beach · 2 nuevos permisos esta semana</div>
+                        <span class="badge b-green">Activo</span>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-dot" style="background:var(--green)"></div>
+                        <div class="monitor-zip">33021</div>
+                        <div class="monitor-info">Hollywood · Sin actividad nueva</div>
+                        <span class="badge b-green">Activo</span>
+                    </div>
+                    <div class="monitor-item">
+                        <div class="monitor-dot" style="background:var(--yellow)"></div>
+                        <div class="monitor-zip">33312</div>
+                        <div class="monitor-info">Ft. Lauderdale SW · 1 alerta de precio</div>
+                        <span class="badge b-yellow">Alerta</span>
+                    </div>
+                    <div class="monitor-item" style="opacity:.5">
+                        <div class="monitor-dot" style="background:var(--muted);animation:none"></div>
+                        <div class="monitor-zip">33023</div>
+                        <div class="monitor-info">Miramar · Monitoreo pausado</div>
+                        <span class="badge" style="background:rgba(42,47,68,.5);color:var(--muted);border-color:var(--border)">Pausado</span>
+                    </div>
+
+                    <button class="btn btn-outline" style="width:100%;margin-top:16px;font-size:12px" onclick="alert('En producción: agregar nuevo ZIP al monitoreo')">+ Agregar ZIP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas alertas -->
+        <div class="card" style="margin-bottom:24px">
+            <h2>📬 Últimas Alertas</h2>
+            <div class="alert-item">
+                <div class="alert-icon">🔴</div>
+                <div>
+                    <div class="alert-title">Nuevo permiso high-end aprobado · ZIP 33009</div>
+                    <div class="alert-meta">1065 Ocean Drive · SFH ~$900K ARV estimado · Hoy 09:14 AM · <span style="color:var(--yellow)">Competencia potencial</span></div>
+                </div>
+            </div>
+            <div class="alert-item">
+                <div class="alert-icon">📈</div>
+                <div>
+                    <div class="alert-title">ARV promedio sube 2.3% en ZIP 33021</div>
+                    <div class="alert-meta">6 nuevas ventas registradas en MLS · Ayer 04:30 PM · <span style="color:var(--green)">Oportunidad</span></div>
+                </div>
+            </div>
+            <div class="alert-item">
+                <div class="alert-icon">⏱️</div>
+                <div>
+                    <div class="alert-title">Comparable reducido de precio · 1320 Waterfront Dr</div>
+                    <div class="alert-meta">$910K → $875K · 45 días en mercado · Hace 3 días · <span style="color:var(--muted)">Informativo</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>🤖 Fase 3 — IA:</strong> El agente conversacional utiliza GPT-4 con RAG sobre la base de datos de deals de Dixa. Los reportes PDF se generan con datos reales del sistema. El monitoreo corre cada 24h sobre portales públicos de permisos de FL.
+        </div>
+    </div>
+
+</main>
+
+<script>
+    // ─── CONFIG ───
+    const API_BASE = 'http://localhost:3000';
+
+    // ─── STATE ───
+    let currentPhase = 1;
+    let dealData = null;
+    let currentZip = '33009';
+    let sessionId = 'demo_' + Date.now();
+
+    const phases = {
+        1: { title: 'Deal Screening Dashboard', desc: 'Evaluación rápida de viabilidad · ARV · Comps · Go/No-Go automático', loading: 'Consultando HouseCanary API y calculando comps...' },
+        2: { title: 'Pipeline & Inteligencia de Mercado', desc: 'Mapa de actividad · Scoring de submercado · Pipeline de permisos por ZIP', loading: 'Cargando scoring de mercado y permisos...' },
+        3: { title: 'IA & Automatización', desc: 'Agente conversacional · Reportes automáticos · Monitoreo de ZIPs en tiempo real', loading: 'Inicializando DIXA AI...' }
+    };
+
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+
+    // ─── HELPERS ───
+    const fmt = n => '$' + Number(n).toLocaleString('en-US');
+
+    function extractZip(address) {
+        const m = address.match(/\b(33\d{3})\b/);
+        return m ? m[1] : '33009';
+    }
+
+    async function apiFetch(path, opts = {}) {
+        const r = await fetch(API_BASE + path, opts);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    }
+
+    function scoreColor(s) {
+        return s >= 70 ? 'var(--green)' : s >= 50 ? 'var(--yellow)' : 'var(--red)';
+    }
+
+    function updateBar(key, score) {
+        const fill = document.getElementById('sb-' + key + '-fill');
+        const val  = document.getElementById('sb-' + key + '-val');
+        if (!fill || !val) return;
+        const c = scoreColor(score);
+        fill.style.width = score + '%';
+        fill.style.background = c;
+        val.textContent = score + ' / 100';
+        val.style.color = c;
+    }
+
+    function statusBadgeClass(status) {
+        if (!status) return 'b-green';
+        const s = status.toLowerCase();
+        if (s.includes('issued') || s.includes('approved') || s.includes('active')) return 'b-green';
+        if (s.includes('construction') || s.includes('progress') || s.includes('insp')) return 'b-blue';
+        if (s.includes('plan') || s.includes('review') || s.includes('pending')) return 'b-purple';
+        return 'b-yellow';
+    }
+
+    // ─── TAB SWITCH ───
+    function switchPhase(n, btn) {
+        currentPhase = n;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('phaseTitle').textContent = phases[n].title;
+        document.getElementById('phaseDesc').textContent  = phases[n].desc;
+        ['panel1','panel2','panel3'].forEach(id => document.getElementById(id).style.display = 'none');
+        const address = document.getElementById('addressInput').value.trim();
+        if (address) {
+            showPanel(n, address);
+            if (n === 2) { loadMarketScoring(currentZip); loadZipRanking(); }
+        }
+    }
+
+    function showPanel(n, address) {
+        document.getElementById('addr1').textContent = address;
+        document.getElementById('addr2').textContent = address;
+        document.getElementById('panel' + n).style.display = 'block';
+    }
+
+    // ─── MAIN ANALYSIS ───
+    async function runAnalysis() {
+        const address = document.getElementById('addressInput').value.trim();
+        if (!address) { alert('Por favor ingresá una dirección'); return; }
+
+        currentZip = extractZip(address);
+        const loading = document.getElementById('loading');
+        document.getElementById('loadingText').textContent = phases[currentPhase].loading;
+        loading.classList.add('active');
+        ['panel1','panel2','panel3'].forEach(id => document.getElementById(id).style.display = 'none');
+
+        try {
+            const data = await apiFetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address, zip: currentZip, sqft: 1400, landCost: 300000, type: 'high-end' })
+            });
+            dealData = data;
+            renderPhase1(data, address);
+            loadPermits(currentZip);
+        } catch (err) {
+            console.warn('[API] Server not reachable, using demo data:', err.message);
+            renderPhase1Mock(address);
+        }
+
+        loading.classList.remove('active');
+        showPanel(currentPhase, address);
+        if (currentPhase === 2) { loadMarketScoring(currentZip); loadZipRanking(); }
+        setTimeout(() => document.getElementById('panel' + currentPhase).scrollIntoView({behavior:'smooth',block:'start'}), 80);
+    }
+
+    function renderPhase1(data, address) {
+        const arv  = data.property.arv;
+        const rent = data.property.rentEstimate || 0;
+        const c    = data.costs;
+
+        document.getElementById('p1arv').textContent  = '$' + (arv/1000).toFixed(0) + 'K';
+        document.getElementById('p1rent').textContent = '$' + (rent/1000).toFixed(1) + 'K';
+        document.getElementById('p1obra').textContent = '$' + (c.breakdown.construction/1000).toFixed(0) + 'K';
+        document.getElementById('p1arv2').textContent  = fmt(arv);
+        document.getElementById('p1land').textContent  = fmt(c.breakdown.land);
+        document.getElementById('p1obra2').textContent = fmt(c.breakdown.construction);
+        document.getElementById('p1soft').textContent  = fmt(c.breakdown.soft);
+        document.getElementById('p1carry').textContent = fmt(c.breakdown.carry);
+        document.getElementById('p1margin').textContent = fmt(c.margin);
+        document.getElementById('p1marginPct').textContent = c.marginPct + '%';
+        document.getElementById('p1marginPct').className = 'kpi-val ' + (c.signal === 'green' ? 'kpi-positive' : 'kpi-warning');
+
+        // Comps table
+        if (data.comps && data.comps.length) {
+            const avg = data.market.avgCompsPrice;
+            const dom = data.market.avgDaysOnMarket;
+            const rows = data.comps.map(comp =>
+                `<tr><td>${comp.address || 'Comparable'}</td><td>${fmt(comp.price)}</td><td>${comp.pricePerSqft ? '$'+comp.pricePerSqft : '-'}</td><td>${comp.daysOnMarket || '-'}</td></tr>`
+            ).join('');
+            document.getElementById('p1compsBody').innerHTML = rows +
+                `<tr style="border-top:1px solid var(--border)"><td style="color:var(--accent);font-weight:600">Promedio</td><td style="color:var(--accent);font-weight:600">${fmt(avg)}</td><td style="color:var(--accent);font-weight:600">-</td><td style="color:var(--accent);font-weight:600">${dom}d</td></tr>`;
+        }
+
+        // Recommendation
+        const rec = data.recommendation;
+        const recClr = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+        document.getElementById('p1recStatus').textContent = rec.label;
+        document.getElementById('p1recStatus').style.color = recClr[rec.signal] || 'var(--green)';
+        document.getElementById('p1recText').innerHTML = rec.summary +
+            '<br><br><strong>Próximo paso:</strong> Validar terreno, obtener tasación profesional y cotizaciones de obra con contratistas locales.';
+    }
+
+    function renderPhase1Mock(address) {
+        // Graceful fallback with realistic random demo data
+        const arv   = Math.floor(Math.random()*200000)+750000;
+        const rent  = Math.floor(Math.random()*2000)+3500;
+        const obra  = Math.floor(Math.random()*100000)+300000;
+        const land  = 300000;
+        const soft  = Math.floor(arv*0.15);
+        const carry = Math.floor(arv*0.10);
+        const margin = arv - land - obra - soft - carry;
+        const pct    = ((margin/arv)*100).toFixed(1);
+
+        document.getElementById('p1arv').textContent  = '$'+(arv/1000).toFixed(0)+'K';
+        document.getElementById('p1rent').textContent = '$'+(rent/1000).toFixed(1)+'K';
+        document.getElementById('p1obra').textContent = '$'+(obra/1000).toFixed(0)+'K';
+        document.getElementById('p1arv2').textContent  = fmt(arv);
+        document.getElementById('p1land').textContent  = fmt(land);
+        document.getElementById('p1obra2').textContent = fmt(obra);
+        document.getElementById('p1soft').textContent  = fmt(soft);
+        document.getElementById('p1carry').textContent = fmt(carry);
+        document.getElementById('p1margin').textContent = fmt(margin);
+        document.getElementById('p1marginPct').textContent = pct+'%';
+        document.getElementById('p1marginPct').className = 'kpi-val '+(pct>=5?'kpi-positive':'kpi-warning');
+        dealData = { address, property: { arv, rentEstimate: rent }, costs: { marginPct: pct, signal: pct>=5?'green':'yellow' }, recommendation: { label: pct>=5?'GO — Viable para Análisis Detallado':'MAYBE — Revisar supuestos', summary: `Margen ${pct}% · Datos en modo demo (servidor no disponible).` } };
+        document.getElementById('p1recStatus').textContent = dealData.recommendation.label;
+        document.getElementById('p1recText').innerHTML = dealData.recommendation.summary;
+    }
+
+    // ─── PERMITS ───
+    async function loadPermits(zip) {
+        try {
+            const data = await apiFetch('/api/permits?zip=' + zip + '&sync=true&limit=50');
+            document.getElementById('p1permTotal').textContent      = data.total;
+            document.getElementById('p1permInProgress').textContent = data.inProgress;
+            document.getElementById('p1permHighEnd').textContent    = data.highEnd;
+            document.getElementById('p1permPlanning').textContent   = Math.max(0, data.total - data.approved - data.inProgress);
+
+            if (data.permits && data.permits.length) {
+                const rows = data.permits.slice(0, 8).map(p => {
+                    const isHighEnd = (p.job_value || 0) >= 500000;
+                    const issueDate = p.issue_date ? new Date(p.issue_date).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : 'Pendiente';
+                    return `<tr>
+                        <td>${p.address || 'N/A'}</td>
+                        <td>${p.permit_type || 'BLDG'}</td>
+                        <td><span class="badge ${statusBadgeClass(p.status)}">${p.status || '-'}</span></td>
+                        <td>${issueDate}</td>
+                        <td>${p.job_value ? fmt(p.job_value) : '-'}</td>
+                        <td style="color:${isHighEnd?'var(--yellow)':'var(--green)'}">${isHighEnd?'Competencia potencial':'No compite'}</td>
+                    </tr>`;
+                }).join('');
+                document.getElementById('permitsBody').innerHTML = rows;
+            }
+        } catch (err) {
+            console.warn('[permits]', err.message);
+        }
+    }
+
+    // ─── MARKET SCORING ───
+    async function loadMarketScoring(zip) {
+        try {
+            const data = await apiFetch('/api/market/scoring?zip=' + zip);
+            const d = data.dimensions;
+            updateBar('spread',      d.spreadArv);
+            updateBar('absorption',  d.absorption);
+            updateBar('saturation',  d.saturation);
+            updateBar('stability',   d.stability);
+            updateBar('competition', d.competition);
+
+            const scoreEl = document.getElementById('p2score');
+            scoreEl.textContent = data.score;
+            scoreEl.style.color = scoreColor(data.score);
+            document.getElementById('p2scoreLabel').textContent =
+                data.recommendation === 'Favorable' ? 'Mercado favorable · Apto para desarrollo' :
+                data.recommendation === 'Neutral'   ? 'Mercado neutro · Evaluar con cuidado' :
+                                                      'Mercado a evitar · Riesgo elevado';
+            document.getElementById('p2zipBadge').textContent = 'ZIP ' + zip;
+        } catch (err) {
+            console.warn('[market/scoring]', err.message);
+        }
+    }
+
+    // ─── ZIP RANKING ───
+    async function loadZipRanking() {
+        try {
+            const data = await apiFetch('/api/market/ranking');
+            const html = data.map((z, i) => {
+                const score = z.score ?? 0;
+                const isTarget = z.zip === currentZip;
+                const badgeClass = isTarget ? 'b-blue' : score >= 70 ? 'b-green' : score >= 50 ? 'b-yellow' : '';
+                const badgeLabel = isTarget ? '⭐ Seleccionado' : score >= 70 ? '🔥 Hot' : score >= 50 ? 'Neutro' : 'Evitar';
+                return `<div class="zip-row" ${isTarget?'style="border-color:rgba(201,169,97,.4)"':''}>
+                    <div class="zip-rank-num" style="${i===0?'':'color:var(--muted)'}">#${i+1}</div>
+                    <div class="zip-code">${z.zip}</div>
+                    <div class="zip-meta">${z.city||'South FL'}${isTarget?' · TARGET':''} · Score ${z.score??'N/A'}</div>
+                    <div class="zip-score" style="color:${scoreColor(score)}">${z.score??'-'}</div>
+                    <span class="badge ${badgeClass}">${badgeLabel}</span>
+                </div>`;
+            }).join('');
+            document.getElementById('zipRankList').innerHTML = html;
+        } catch (err) {
+            console.warn('[market/ranking]', err.message);
+            // Render static placeholder
+            document.getElementById('zipRankList').innerHTML = `
+                <div class="zip-row"><div class="zip-rank-num">#1</div><div class="zip-code">33021</div><div class="zip-meta">Hollywood · Pendiente de cálculo</div><div class="zip-score" style="color:var(--muted)">-</div><span class="badge">-</span></div>
+                <div class="zip-row" style="border-color:rgba(201,169,97,.4)"><div class="zip-rank-num" style="color:var(--blue)">#2</div><div class="zip-code">${currentZip}</div><div class="zip-meta">Target ZIP · Score en cálculo</div><div class="zip-score" style="color:var(--muted)">-</div><span class="badge b-blue">⭐ Seleccionado</span></div>`;
+        }
+    }
+
+    document.getElementById('addressInput').addEventListener('keypress', e => { if(e.key==='Enter') runAnalysis(); });
+
+    // Pre-load demo address
+    window.addEventListener('load', () => {
+        document.getElementById('addressInput').value = '1255 Ocean Drive, Hallandale Beach, FL 33009';
+        runAnalysis();
+    });
+
+    // ─── CHAT (connected to real AI API) ───
+    function sendSugg(el) {
+        document.getElementById('chatInput').value = el.textContent;
+        sendChat();
+    }
+
+    async function sendChat() {
+        const input = document.getElementById('chatInput');
+        const text  = input.value.trim();
+        if (!text) return;
+        input.value = '';
+        const msgs = document.getElementById('chatMessages');
+
+        msgs.innerHTML += `<div class="msg user"><div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div></div>`;
+
+        const typingId = 'typing_' + Date.now();
+        msgs.innerHTML += `<div class="msg bot" id="${typingId}"><div class="msg-avatar">🤖</div><div class="msg-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
+        msgs.scrollTop = msgs.scrollHeight;
+
+        try {
+            const dealContext = dealData ? {
+                address: dealData.address,
+                arv:    dealData.property?.arv,
+                margin: dealData.costs?.marginPct,
+                zip:    currentZip,
+                recommendation: dealData.recommendation?.label
+            } : { zip: currentZip };
+
+            const res  = await fetch(API_BASE + '/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, dealContext, sessionId })
+            });
+            const data = await res.json();
+            document.getElementById(typingId).remove();
+            msgs.innerHTML += `<div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">${data.reply}</div></div>`;
+        } catch (err) {
+            document.getElementById(typingId).remove();
+            msgs.innerHTML += `<div class="msg bot"><div class="msg-avatar">🤖</div><div class="msg-bubble">${getFallback(text)}</div></div>`;
+        }
+        msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function getFallback(text) {
+        const t = text.toLowerCase();
+        if (t.includes('spread') || t.includes('margen')) return dealData
+            ? `El spread estimado es <strong>${dealData.costs?.marginPct}%</strong> sobre ARV de <strong>${fmt(dealData.property?.arv)}</strong>.`
+            : 'Analizá una dirección primero para ver el spread.';
+        if (t.includes('permiso') || t.includes('zip')) return 'El pipeline de permisos está en Fase 2. Cambiá de tab para ver el detalle por ZIP.';
+        if (t.includes('momento') || t.includes('buen') || t.includes('entrar')) return 'Basado en la absorción actual del ZIP, el mercado está favorable. Ver scoring completo en Fase 2.';
+        if (t.includes('riesgo')) return dealData?.recommendation?.summary || 'Revisá la recomendación en el panel de análisis.';
+        if (t.includes('resumen') || t.includes('ejecutivo')) return dealData
+            ? `📋 <strong>Resumen — ${dealData.address}</strong><br>ARV: ${fmt(dealData.property?.arv)} · Margen: ${dealData.costs?.marginPct}% · Recomendación: <strong>${dealData.recommendation?.label}</strong>`
+            : 'Analizá una dirección primero.';
+        return 'Para ese análisis, DIXA AI consulta HouseCanary, MLS y permisos municipales en tiempo real. Asegurate de que el servidor esté corriendo en localhost:3000.';
+    }
+
+    // ─── REPORT ───
+    function generateReport() {
+        const msg = document.getElementById('reportMsg');
+        msg.style.display = 'block';
+        setTimeout(() => msg.style.display = 'none', 4000);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Deal Analyzer — DIXA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#07091d;
+            --surface:#111630;
+            --surface2:#171d3b;
+            --accent:#c9a961;
+            --accent2:#d4b896;
+            --green:#10b981;
+            --yellow:#f59e0b;
+            --red:#ef4444;
+            --blue:#60a5fa;
+            --text:#ffffff;
+            --muted:#8b91b0;
+            --border:#252b47;
+            --glow:rgba(201,169,97,0.18);
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+
+        /* ──────────────── UTILS ──────────────── */
+        .container{max-width:1080px;margin:0 auto;padding:0 32px}
+        .gold{color:var(--accent)}
+        .muted{color:var(--muted)}
+        .tag{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+        .tag-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+        .tag-yellow{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+        .tag-blue{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+        .tag-gold{background:rgba(201,169,97,.15);color:var(--accent);border:1px solid rgba(201,169,97,.3)}
+        .divider{width:100%;height:1px;background:var(--border);margin:72px 0}
+
+        /* ──────────────── NAV ──────────────── */
+        nav{
+            position:sticky;top:0;z-index:200;
+            backdrop-filter:blur(16px);
+            background:rgba(7,9,29,.85);
+            border-bottom:1px solid var(--border);
+            padding:0 32px;
+        }
+        .nav-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+        .nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px}
+        .nav-links{display:flex;gap:32px;list-style:none}
+        .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .2s}
+        .nav-links a:hover{color:var(--text)}
+        .nav-cta{padding:8px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;border-radius:6px;text-decoration:none;transition:all .3s}
+        .nav-cta:hover{box-shadow:0 8px 20px rgba(201,169,97,.3);transform:translateY(-1px)}
+
+        /* ──────────────── COVER ──────────────── */
+        .cover{
+            min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+            text-align:center;padding:80px 32px;position:relative;overflow:hidden;
+        }
+        .cover::before{
+            content:'';position:absolute;inset:0;
+            background:radial-gradient(ellipse 70% 55% at 50% 38%,rgba(201,169,97,.1) 0%,transparent 70%);
+            pointer-events:none;
+        }
+        .cover::after{
+            content:'';position:absolute;bottom:-1px;left:0;right:0;height:120px;
+            background:linear-gradient(transparent,var(--bg));pointer-events:none;
+        }
+        .cover-eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:28px}
+        .cover-logo{font-family:'Playfair Display',serif;font-size:80px;font-weight:700;background:linear-gradient(135deg,#fff 40%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:8px;line-height:1;margin-bottom:4px}
+        .cover-sub{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:56px}
+        .cover-bar{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:0 auto 56px}
+        .cover-headline{font-family:'Playfair Display',serif;font-size:52px;font-weight:700;line-height:1.18;max-width:680px;margin-bottom:20px}
+        .cover-headline em{font-style:italic;color:var(--accent)}
+        .cover-desc{font-size:17px;color:var(--muted);max-width:480px;margin:0 auto 48px;line-height:1.75}
+        .cover-pill{background:rgba(201,169,97,.08);border:1px solid rgba(201,169,97,.25);padding:12px 28px;border-radius:6px;font-size:13px;color:var(--accent2);display:inline-block;margin-bottom:72px}
+        .cover-meta{display:flex;gap:56px;justify-content:center}
+        .cover-meta-item strong{display:block;font-size:14px;color:var(--text);margin-bottom:2px}
+        .cover-meta-item span{font-size:12px;color:var(--muted)}
+
+        /* ──────────────── SECTION HEADER ──────────────── */
+        .sec-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+        .sec-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;margin-bottom:14px;line-height:1.2}
+        .sec-lead{font-size:16px;color:var(--muted);line-height:1.8;max-width:680px;margin-bottom:48px}
+
+        /* ──────────────── PROBLEM ──────────────── */
+        .problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
+        .problem-card{
+            background:var(--surface);border:1px solid var(--border);border-radius:12px;
+            padding:28px;transition:all .3s;
+        }
+        .problem-card:hover{border-color:rgba(239,68,68,.4);transform:translateY(-3px)}
+        .problem-icon{font-size:28px;margin-bottom:14px}
+        .problem-tool{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+        .problem-title{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text)}
+        .problem-desc{font-size:13px;color:var(--muted);line-height:1.6}
+        .problem-banner{
+            background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(245,158,11,.06));
+            border:1px solid rgba(239,68,68,.2);border-left:3px solid var(--red);
+            border-radius:10px;padding:20px 24px;font-size:14px;color:var(--muted);line-height:1.7;
+        }
+        .problem-banner strong{color:var(--text)}
+
+        /* ──────────────── SOLUTION ──────────────── */
+        .solution-hero{
+            background:var(--surface);border:1px solid var(--border);border-radius:16px;
+            overflow:hidden;margin-bottom:48px;
+        }
+        .solution-hero-top{
+            background:linear-gradient(135deg,rgba(201,169,97,.1),rgba(96,165,250,.06));
+            padding:40px;border-bottom:1px solid var(--border);
+            display:flex;align-items:center;gap:20px;
+        }
+        .solution-hero-icon{font-size:48px}
+        .solution-hero-text h3{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:6px}
+        .solution-hero-text p{color:var(--muted);font-size:15px;max-width:560px}
+        .solution-features{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+        .feat{padding:28px;border-right:1px solid var(--border)}
+        .feat:last-child{border-right:none}
+        .feat-icon{font-size:22px;margin-bottom:12px}
+        .feat-title{font-size:14px;font-weight:600;margin-bottom:6px}
+        .feat-desc{font-size:12px;color:var(--muted);line-height:1.55}
+
+        /* ──────────────── DEMO CALLOUT ──────────────── */
+        .demo-box{
+            background:linear-gradient(135deg,rgba(201,169,97,.08) 0%,rgba(96,165,250,.06) 100%);
+            border:1px solid rgba(201,169,97,.25);border-radius:14px;
+            padding:36px 40px;display:flex;align-items:center;gap:32px;margin-bottom:48px;
+        }
+        .demo-box-icon{font-size:52px;flex-shrink:0}
+        .demo-box h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px}
+        .demo-box p{color:var(--muted);font-size:14px;line-height:1.65;margin-bottom:16px}
+        .demo-btn{
+            display:inline-block;padding:11px 24px;
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            color:var(--bg);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.5px;
+            border-radius:6px;text-decoration:none;transition:all .3s;cursor:pointer;border:none;
+        }
+        .demo-btn:hover{box-shadow:0 12px 24px rgba(201,169,97,.3);transform:translateY(-2px)}
+
+        /* ──────────────── PHASES ──────────────── */
+        .phases-timeline{display:flex;flex-direction:column;gap:0;position:relative;margin-bottom:24px}
+        .phases-timeline::before{
+            content:'';position:absolute;left:23px;top:0;bottom:0;width:2px;
+            background:linear-gradient(180deg,var(--accent),var(--blue),transparent);
+        }
+        .phase{
+            display:flex;gap:28px;align-items:flex-start;padding:0 0 40px 0;
+        }
+        .phase:last-child{padding-bottom:0}
+        .phase-dot{
+            width:48px;height:48px;border-radius:50%;flex-shrink:0;
+            display:flex;align-items:center;justify-content:center;
+            font-weight:700;font-size:13px;z-index:1;margin-top:4px;
+        }
+        .phase-dot-1{background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg)}
+        .phase-dot-2{background:linear-gradient(135deg,var(--blue),#3b82f6);color:var(--bg)}
+        .phase-dot-3{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff}
+        .phase-body{flex:1}
+        .phase-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+        .phase-header h3{font-family:'Playfair Display',serif;font-size:22px}
+        .phase-duration{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:4px 10px;border-radius:4px}
+        .phase-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:16px}
+        .phase-items{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+        .phase-item{
+            background:var(--surface);border:1px solid var(--border);border-radius:8px;
+            padding:14px 16px;font-size:13px;
+        }
+        .phase-item strong{display:block;color:var(--text);font-size:13px;margin-bottom:3px}
+        .phase-item span{color:var(--muted);font-size:12px;line-height:1.5}
+
+        /* ──────────────── INTEGRATIONS ──────────────── */
+        .integrations-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+        .int-card{
+            background:var(--surface);border:1px solid var(--border);border-radius:10px;
+            padding:22px;transition:all .3s;
+        }
+        .int-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+        .int-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .int-name{font-size:15px;font-weight:600}
+        .int-status{font-size:11px;display:flex;align-items:center;gap:4px}
+        .int-desc{font-size:12px;color:var(--muted);line-height:1.55;margin-bottom:10px}
+        .int-meta{font-size:11px;color:var(--muted);display:flex;gap:12px}
+        .int-meta span{display:flex;align-items:center;gap:3px}
+
+        /* ──────────────── INVESTMENT ──────────────── */
+        .invest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+        .invest-card{
+            background:var(--surface);border:1px solid var(--border);border-radius:12px;
+            padding:28px;text-align:center;transition:all .3s;
+        }
+        .invest-card.featured{
+            background:linear-gradient(135deg,rgba(201,169,97,.1),rgba(26,31,58,.8));
+            border-color:rgba(201,169,97,.4);
+            transform:scale(1.03);
+        }
+        .invest-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .invest-card.featured:hover{transform:scale(1.03) translateY(-3px)}
+        .invest-phase{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
+        .invest-name{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:20px}
+        .invest-price{font-size:42px;font-weight:700;color:var(--accent);font-family:'Playfair Display',serif;line-height:1}
+        .invest-period{font-size:12px;color:var(--muted);margin-bottom:20px}
+        .invest-perks{list-style:none;text-align:left;display:flex;flex-direction:column;gap:8px}
+        .invest-perks li{font-size:13px;color:var(--muted);display:flex;align-items:flex-start;gap:8px}
+        .invest-perks li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+        .invest-note{background:rgba(201,169,97,.07);border:1px solid rgba(201,169,97,.2);border-radius:10px;padding:18px 22px;font-size:13px;color:var(--muted);line-height:1.7}
+        .invest-note strong{color:var(--text)}
+
+        /* ──────────────── ROI SECTION ──────────────── */
+        .roi-hero{background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(201,169,97,.05));border:1px solid rgba(16,185,129,.2);border-radius:16px;padding:40px;margin-bottom:32px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+        .roi-stat-big{font-family:'Playfair Display',serif;font-size:64px;font-weight:700;color:var(--green);line-height:1}
+        .roi-stat-label{font-size:14px;color:var(--muted);margin-top:6px}
+        .roi-table{width:100%;border-collapse:collapse;font-size:13px}
+        .roi-table th{text-align:left;padding:10px 14px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+        .roi-table td{padding:10px 14px;border-bottom:1px solid rgba(37,43,71,.5);color:var(--text)}
+        .roi-table tr:last-child td{border-bottom:none}
+        .roi-table .highlight{color:var(--green);font-weight:700}
+        .build-buy-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+        .bb-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px}
+        .bb-card.bad{border-color:rgba(239,68,68,.25);background:rgba(239,68,68,.04)}
+        .bb-card.good{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.05)}
+        .bb-title{font-size:15px;font-weight:700;margin-bottom:6px}
+        .bb-price{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;margin:12px 0 4px}
+        .bb-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+        .bb-items{list-style:none;display:flex;flex-direction:column;gap:6px}
+        .bb-items li{font-size:12px;color:var(--muted);display:flex;align-items:flex-start;gap:6px}
+        .bb-items li.bad-item::before{content:'✗';color:var(--red);font-weight:700}
+        .bb-items li.good-item::before{content:'✓';color:var(--green);font-weight:700}
+        .competitor-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
+        .competitor-table th{text-align:left;padding:10px 14px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);background:rgba(17,22,48,.8)}
+        .competitor-table td{padding:10px 14px;border-bottom:1px solid rgba(37,43,71,.5);color:var(--text)}
+        .competitor-table tr:last-child td{border-bottom:none;background:linear-gradient(90deg,rgba(201,169,97,.08),transparent);font-weight:600}
+        .competitor-table .pct{font-weight:700}
+        .pct-green{color:var(--green)}
+        .pct-yellow{color:var(--yellow)}
+        .pct-red{color:var(--red)}
+        .invest-note strong{color:var(--text)}
+
+        /* ──────────────── WHY US ──────────────── */
+        .why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+        .why-card{
+            background:var(--surface);border:1px solid var(--border);border-radius:10px;
+            padding:24px;display:flex;gap:16px;align-items:flex-start;transition:all .3s;
+        }
+        .why-card:hover{border-color:rgba(201,169,97,.4)}
+        .why-icon{font-size:26px;flex-shrink:0;margin-top:2px}
+        .why-title{font-size:15px;font-weight:600;margin-bottom:5px}
+        .why-desc{font-size:13px;color:var(--muted);line-height:1.6}
+
+        /* ──────────────── NEXT STEPS ──────────────── */
+        .steps-row{display:flex;gap:16px;margin-bottom:24px}
+        .step{
+            flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+            padding:24px;text-align:center;
+        }
+        .step-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--accent);margin-bottom:10px}
+        .step-title{font-size:14px;font-weight:600;margin-bottom:6px}
+        .step-desc{font-size:12px;color:var(--muted);line-height:1.6}
+
+        /* ──────────────── CTA ──────────────── */
+        .cta-section{
+            text-align:center;padding:96px 40px;
+            background:linear-gradient(180deg,transparent,rgba(201,169,97,.05),transparent);
+            border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+        }
+        .cta-section h2{font-family:'Playfair Display',serif;font-size:44px;margin-bottom:14px;line-height:1.2}
+        .cta-section p{color:var(--muted);font-size:16px;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto}
+        .cta-btn{
+            display:inline-block;padding:18px 52px;
+            background:linear-gradient(135deg,var(--accent),var(--accent2));
+            color:var(--bg);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:1px;
+            border-radius:8px;text-decoration:none;transition:all .3s;
+        }
+        .cta-btn:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(201,169,97,.3)}
+        .cta-contact{margin-top:28px;font-size:13px;color:var(--muted)}
+        .cta-contact a{color:var(--accent);text-decoration:none}
+        .cta-contact a:hover{text-decoration:underline}
+
+        /* ──────────────── FOOTER ──────────────── */
+        footer{padding:40px 32px;text-align:center;border-top:1px solid var(--border)}
+        .footer-logo{font-family:'Playfair Display',serif;font-size:24px;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px;margin-bottom:12px}
+        .footer-note{font-size:11px;color:var(--muted);line-height:1.8;max-width:700px;margin:0 auto}
+
+        /* ──────────────── RESPONSIVE ──────────────── */
+        @media(max-width:768px){
+            .cover-headline{font-size:34px}
+            .cover-logo{font-size:56px}
+            .cover-meta{flex-direction:column;gap:20px}
+            .problem-grid,.solution-features,.phase-items,.integrations-grid,.invest-grid,.why-grid,.steps-row{grid-template-columns:1fr;flex-direction:column}
+            .feat{border-right:none;border-bottom:1px solid var(--border)}
+            .demo-box{flex-direction:column}
+            nav .nav-links{display:none}
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-inner">
+        <div class="nav-logo">IT4W</div>
+        <ul class="nav-links">
+            <li><a href="#problema">Diagnóstico</a></li>
+            <li><a href="#solucion">Solución</a></li>
+            <li><a href="#fases">Fases</a></li>
+            <li><a href="#roi">ROI</a></li>
+            <li><a href="#inversión">Inversión</a></li>
+        </ul>
+        <a href="mailto:rodrigo.vivares@it4w.net?subject=DIXA Deal Analyzer - Quiero arrancar" class="nav-cta">Empecemos</a>
+    </div>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+    <div class="cover-eyebrow">Propuesta Técnica · Confidencial · Mayo 2026</div>
+    <div class="cover-logo">DIXA</div>
+    <div class="cover-sub">Deal Intelligence Platform</div>
+    <div class="cover-bar"></div>
+    <div class="cover-headline">De pestañas dispersas a una sola <em>fuente de verdad</em></div>
+    <div class="cover-desc">Una plataforma web que centraliza el análisis de viabilidad de cada deal: ARV, comps, costos de obra, pipeline de competencia y Go/No-Go automático.</div>
+    <div class="cover-pill">🎯 Preparado por IT4W para: Hernán · DIXA Real Estate</div>
+    <div class="cover-meta">
+        <div class="cover-meta-item"><strong>Hernán</strong><span>Cliente</span></div>
+        <div class="cover-meta-item"><strong>Rodrigo Vivares</strong><span>Sales Rep · IT4W</span></div>
+        <div class="cover-meta-item"><strong>Mayo 2026</strong><span>Fecha</span></div>
+        <div class="cover-meta-item"><strong>3 Fases</strong><span>Roadmap</span></div>
+        <div class="cover-meta-item"><strong>Confidencial</strong><span>Clasificación</span></div>
+    </div>
+</div>
+
+<!-- DIAGNÓSTICO -->
+<div class="container" id="problema">
+    <div style="padding:80px 0 0">
+        <div class="sec-eyebrow">01 · Diagnóstico</div>
+        <div class="sec-title">El problema no es falta de data. Es falta de integración.</div>
+        <div class="sec-lead">Hernán ya tiene las fuentes correctas. El problema es que cada una vive en su propio silo: HouseCanary en una tab, Zillow en otra, los costos en una planilla, la oferta futura en ningún lado. Cada análisis tarda horas que deberían tomar segundos.</div>
+    </div>
+
+    <div class="problem-grid">
+        <div class="problem-card">
+            <div class="problem-icon">🏷️</div>
+            <div class="problem-tool">HouseCanary</div>
+            <div class="problem-title">Solo valuación</div>
+            <div class="problem-desc">Excelente para ARV y renta estimada, pero no integra costos de obra ni pipeline. Los datos no salen de la plataforma.</div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon">🏘️</div>
+            <div class="problem-tool">Zillow / Redfin</div>
+            <div class="problem-title">Comps manuales</div>
+            <div class="problem-desc">Hay que cruzar las ventas a mano. Sin automatización ni radio dinámico. No hay cálculo de spread integrado.</div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon">📊</div>
+            <div class="problem-tool">Zonda (evaluando)</div>
+            <div class="problem-title">Caro y oversized</div>
+            <div class="problem-desc">Orientado a builders grandes. No tiene API abierta práctica para el uso operativo de Dixa. ROI difícil de justificar.</div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon">🔨</div>
+            <div class="problem-tool">Costos de obra</div>
+            <div class="problem-title">Estimados "a ojo"</div>
+            <div class="problem-desc">No existe herramienta que parametrice el costo por sqft con benchmarks actualizados para el mercado de Florida.</div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon">🏗️</div>
+            <div class="problem-tool">Oferta futura</div>
+            <div class="problem-title">No existe</div>
+            <div class="problem-desc">Sin visibilidad de nuevos permisos de construcción en el ZIP analizado. Decisiones tomadas sin conocer la competencia real.</div>
+        </div>
+        <div class="problem-card">
+            <div class="problem-icon">📋</div>
+            <div class="problem-tool">Vista integrada</div>
+            <div class="problem-title">No existe</div>
+            <div class="problem-desc">Todo vive en tabs de browser y planillas de Excel. No hay un dashboard único que consolide el análisis de un deal.</div>
+        </div>
+    </div>
+
+    <div class="problem-banner">
+        <strong>🔍 El dolor real:</strong> El equipo de DIXA invierte horas en análisis que, con la integración correcta, deberían tomar menos de 60 segundos. Cada deal que tarda en analizarse es una ventana de oportunidad que se cierra.
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- SOLUCIÓN -->
+<div class="container" id="solucion">
+    <div class="sec-eyebrow">02 · La Solución</div>
+    <div class="sec-title">DIXA Deal Analyzer</div>
+    <div class="sec-lead">Una plataforma web liviana que centraliza toda la inteligencia de un deal en un solo dashboard. Ingresás una dirección y en segundos obtenés ARV, comps, costo estimado de obra, pipeline de competencia y una recomendación Go/No-Go automática.</div>
+
+    <div class="solution-hero">
+        <div class="solution-hero-top">
+            <div class="solution-hero-icon">⚡</div>
+            <div class="solution-hero-text">
+                <h3>De una dirección a un análisis completo en &lt;60 segundos</h3>
+                <p>El sistema consolida automáticamente HouseCanary, Zillow, datos de permisos municipales y benchmarks de costos de construcción de Florida en un solo panel.</p>
+            </div>
+        </div>
+        <div class="solution-features">
+            <div class="feat">
+                <div class="feat-icon">🏷️</div>
+                <div class="feat-title">ARV Automático</div>
+                <div class="feat-desc">Valuación vía HouseCanary API con AVM, valor por condición e historial de ventas.</div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">📊</div>
+                <div class="feat-title">Comps Dinámicos</div>
+                <div class="feat-desc">Ventas recientes y rentas del radio con $/sqft y días en mercado, cruzadas de Zillow + Redfin.</div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">💰</div>
+                <div class="feat-title">Costos de Obra</div>
+                <div class="feat-desc">Módulo parametrizado con RSMeans + histórico Dixa: tipo de construcción, sqft y zona de Florida.</div>
+            </div>
+            <div class="feat">
+                <div class="feat-icon">🚦</div>
+                <div class="feat-title">Go / No-Go</div>
+                <div class="feat-desc">Cálculo instantáneo de margen bruto = ARV − (terreno + obra + soft costs + carry). Semáforo automático.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-box">
+        <div class="demo-box-icon">🖥️</div>
+        <div>
+            <div class="tag tag-gold" style="margin-bottom:10px">Demo disponible</div>
+            <h3>Ya existe un prototipo funcional</h3>
+            <p>El mockup del Deal Analyzer ya está construido y muestra exactamente cómo se vería la experiencia: ingreso de dirección, análisis de ARV, tabla de comps, estructura de costos, KPIs clave y recomendación final.</p>
+            <button class="demo-btn" onclick="window.open('dixa-deal-analyzer-v2.html','_blank')">Ver Demo →</button>
+        </div>
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- FASES -->
+<div class="container" id="fases">
+    <div class="sec-eyebrow">03 · Roadmap de Desarrollo</div>
+    <div class="sec-title">Tres fases, valor incremental desde el día uno</div>
+    <div class="sec-lead">El producto se construye en capas: primero el núcleo de análisis rápido (MVP), luego inteligencia de mercado, y finalmente automatización con IA. Cada fase entrega valor inmediato antes de pasar a la siguiente.</div>
+
+    <div class="phases-timeline">
+        <!-- FASE 1 -->
+        <div class="phase">
+            <div class="phase-dot phase-dot-1">F1</div>
+            <div class="phase-body">
+                <div class="phase-header">
+                    <h3>MVP — Deal Screening Dashboard</h3>
+                    <span class="phase-duration">⏱ Semanas 1–2</span>
+                    <span class="tag tag-gold">Prioritario</span>
+                </div>
+                <div class="phase-desc">Un panel donde Hernán ingresa una dirección y obtiene automáticamente todo lo que necesita para decidir si vale la pena profundizar en el deal. Sin pestañas, sin planillas.</div>
+                <div class="phase-items">
+                    <div class="phase-item">
+                        <strong>📊 ARV & Renta Estimada</strong>
+                        <span>Integración directa con HouseCanary API (/v2/property/value, /v2/property/rental_value). AVM + valor por condición + historial.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🏘️ Comps Automáticos</strong>
+                        <span>Ventas recientes y rentas en radio configurable. Zillow API + Redfin data. Tabla con precio, $/sqft y días en mercado.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🔨 Estimador de Obra</strong>
+                        <span>Módulo parametrizado con RSMeans/BuildZoom o modelo propio Dixa. Input: tipo de construcción, sqft, zona FL.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🚦 Go/No-Go Automático</strong>
+                        <span>Margen bruto = ARV − (terreno + obra + soft costs + carry). Semáforo verde/amarillo/rojo configurable por Hernán.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FASE 2 -->
+        <div class="phase">
+            <div class="phase-dot phase-dot-2">F2</div>
+            <div class="phase-body">
+                <div class="phase-header">
+                    <h3>Pipeline & Inteligencia de Mercado</h3>
+                    <span class="phase-duration">⏱ Semana 3</span>
+                    <span class="tag tag-blue">Diferenciador clave</span>
+                </div>
+                <div class="phase-desc">Visibilidad total de la oferta futura: permisos aprobados, proyectos en construcción y competencia directa high-end en cada ZIP analizado. Mapas interactivos y scoring de submercado.</div>
+                <div class="phase-items">
+                    <div class="phase-item">
+                        <strong>🏗️ Oferta Futura</strong>
+                        <span>Integración con portales públicos de permisos de Broward, Miami-Dade y Palm Beach. ETL automatizado.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🗺️ Mapa Interactivo</strong>
+                        <span>Heatmap de actividad de permisos, comps y densidad de inventario por ZIP. Vista geográfica del mercado.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>📈 Scoring de Submercado</strong>
+                        <span>Algoritmo que rankea zonas por spread (ARV vs. costo), velocidad de absorción y pipeline de competencia.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>📉 Análisis de Absorción</strong>
+                        <span>Velocidad histórica de venta por ZIP y segmento de precio. Proyección de tiempo en mercado para el deal.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FASE 3 -->
+        <div class="phase">
+            <div class="phase-dot phase-dot-3">F3</div>
+            <div class="phase-body">
+                <div class="phase-header">
+                    <h3>Inteligencia Artificial & Automatización</h3>
+                    <span class="phase-duration">⏱ Semana 4</span>
+                    <span class="tag tag-blue" style="background:rgba(139,92,246,.15);color:#a78bfa;border-color:rgba(139,92,246,.3)">Roadmap futuro</span>
+                </div>
+                <div class="phase-desc">El sistema aprende y trabaja solo: agente conversacional de deals, reportes automáticos listos para inversores, y alertas en tiempo real cuando aparece actividad relevante en los ZIPs que Dixa está monitoreando.</div>
+                <div class="phase-items">
+                    <div class="phase-item">
+                        <strong>🤖 Agente "Preguntale al Deal"</strong>
+                        <span>Subí una dirección o un deal memo y el sistema responde: spread estimado, comps, pipeline, riesgo. Lenguaje natural.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>📑 Reportes Automáticos</strong>
+                        <span>PDF/Word de viabilidad listo para presentar a inversores o socios, con toda la data consolidada en minutos.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🔔 Monitoreo Continuo</strong>
+                        <span>Alertas automáticas cuando se aprueba un nuevo permiso en un ZIP watchlisted. Dixa se entera antes que la competencia.</span>
+                    </div>
+                    <div class="phase-item">
+                        <strong>🧠 Modelo Predictivo</strong>
+                        <span>Predicción de ARV y absorción entrenado con histórico de ventas de Florida. Mejora con cada deal procesado.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- INTEGRACIONES -->
+<div class="container" id="tech">
+    <div class="sec-eyebrow">04 · Factibilidad Técnica</div>
+    <div class="sec-title">Integraciones validadas y viables</div>
+    <div class="sec-lead">Cada integración del stack fue evaluada en términos de disponibilidad de API, costo operativo y dificultad de implementación. El 80% son green-light desde el día uno.</div>
+
+    <div class="integrations-grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="int-card">
+            <div class="int-header">
+                <div class="int-name">HouseCanary</div>
+                <span class="tag tag-green">✅ API lista</span>
+            </div>
+            <div class="int-desc">REST API bien documentada y SOC 2 compliant. Endpoints /v2/property/value y /v2/property/rental_value. Base del módulo de ARV.</div>
+            <div class="int-meta">
+                <span>💲 ~$0.50–2/lookup</span>
+                <span>🟢 Dificultad baja</span>
+            </div>
+        </div>
+        <div class="int-card">
+            <div class="int-header">
+                <div class="int-name">Zillow API</div>
+                <span class="tag tag-green">✅ Disponible</span>
+            </div>
+            <div class="int-desc">APIs públicas + datasets para Zestimates y ventas recientes. Free tier con opción a partner plan para mayor volumen y calidad de datos.</div>
+            <div class="int-meta">
+                <span>💲 Free / partner</span>
+                <span>🟢 Dificultad baja</span>
+            </div>
+        </div>
+        <div class="int-card">
+            <div class="int-header">
+                <div class="int-name">Redfin Data</div>
+                <span class="tag tag-yellow">⚠️ Sin API oficial</span>
+            </div>
+            <div class="int-desc">No tiene API pública, pero tiene data feeds descargables y existen integraciones alternativas via scraping controlado o servicios intermediarios.</div>
+            <div class="int-meta">
+                <span>💲 Variable</span>
+                <span>🟡 Dificultad media</span>
+            </div>
+        </div>
+        <div class="int-card" style="grid-column:1/-1">
+            <div class="int-header">
+                <div class="int-name">Permisos FL — Estado por Condado</div>
+                <span class="tag tag-yellow">⚠️ Mixto — investigado</span>
+            </div>
+            <div class="int-desc" style="margin-bottom:14px">Realizamos una investigación técnica profunda de las APIs públicas de los tres condados target. El resultado no es uniforme — y es importante saberlo desde el arranque:</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px">
+                <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:14px">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                        <span style="font-size:18px">✅</span>
+                        <span style="font-weight:700;font-size:14px">Miami-Dade</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--muted);line-height:1.55">API <strong style="color:var(--green)">confirmada y funcional</strong>. ArcGIS FeatureServer en AGOL (<code style="font-size:10px;color:var(--accent)">services.arcgis.com</code>). 2,000+ permisos reales por ZIP, últimos 2 años. Datos en vivo.</div>
+                </div>
+                <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:14px">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                        <span style="font-size:18px">⚠️</span>
+                        <span style="font-weight:700;font-size:14px">Broward</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--muted);line-height:1.55"><strong style="color:var(--yellow)">Sin API REST pública estable.</strong> bcgis.broward.org (503 frecuente), ningún FeatureServer accesible encontrado tras investigación exhaustiva. <strong>Fase 1:</strong> datos mock realistas. <strong>Roadmap:</strong> integración vía ATTOM Data o acuerdo directo con el condado.</div>
+                </div>
+                <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:14px">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                        <span style="font-size:18px">⚠️</span>
+                        <span style="font-weight:700;font-size:14px">Palm Beach</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--muted);line-height:1.55"><strong style="color:var(--yellow)">Solo datos agregados disponibles públicamente</strong> (estadísticas trimestrales por zona, no permisos individuales). <strong>Alternativas evaluadas:</strong> ATTOM Data API (~$200–400/mes) para cobertura completa de los 3 condados.</div>
+                </div>
+            </div>
+            <div style="background:rgba(96,165,250,.06);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--muted)">
+                💡 <strong style="color:var(--text)">Solución de largo plazo:</strong> ATTOM Data API cubre los 3 condados con permisos individuales a ~$200–400/mes. Puede incorporarse como upgrade en Fase 2 o Fase 3 sin cambiar la arquitectura del sistema.
+            </div>
+            <div class="int-meta" style="margin-top:12px">
+                <span>💲 Miami-Dade: Gratuito · Broward/PB: Mock F1 → ATTOM $200–400/mes</span>
+                <span>🟡 Complejidad mixta por condado</span>
+            </div>
+        </div>
+        <div class="int-card">
+            <div class="int-header">
+                <div class="int-name">Costos de Obra</div>
+                <span class="tag tag-yellow">⚠️ Modelo propio</span>
+            </div>
+            <div class="int-desc">RSMeans/Gordian tienen API pero son caros. La alternativa más viable y diferenciadora: modelo propio de Dixa alimentado con histórico de proyectos reales.</div>
+            <div class="int-meta">
+                <span>💲 Modelo propio = $0</span>
+                <span>🟡 Dificultad media</span>
+            </div>
+        </div>
+        <div class="int-card">
+            <div class="int-header">
+                <div class="int-name">Zonda</div>
+                <span class="tag tag-yellow">⚠️ Premium / Fase 3</span>
+            </div>
+            <div class="int-desc">API limitada y orientada a enterprise. Costo premium alto. Evaluada para Fase 3 si los portales públicos no alcanzan el nivel de detalle requerido.</div>
+            <div class="int-meta">
+                <span>💲 Premium ($$)</span>
+                <span>🔴 Dificultad alta</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- INVERSIÓN -->
+<div class="container" id="inversión">
+    <div class="sec-eyebrow">05 · Inversión</div>
+    <div class="sec-title">Plataforma completa. 12 cuotas de $1,000.</div>
+    <div class="sec-lead">El sistema completo (las 3 fases) se entrega en 1 mes. El pago se distribuye en 12 cuotas mensuales de $1,000 — sin costo de financiamiento. La herramienta trabaja para Hernán mucho antes de que se complete el plan de pagos.</div>
+
+    <!-- Main pricing card -->
+    <div style="background:linear-gradient(135deg,rgba(201,169,97,.1),rgba(26,31,58,.9));border:2px solid rgba(201,169,97,.4);border-radius:16px;padding:40px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+        <div>
+            <div class="tag tag-gold" style="margin-bottom:16px">⭐ Plataforma Full Intelligence</div>
+            <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:24px">DIXA Deal Analyzer — 3 Fases Completas</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+                <div style="font-family:'Playfair Display',serif;font-size:64px;font-weight:700;color:var(--accent);line-height:1">$1.000</div>
+                <div style="font-size:16px;color:var(--muted)">/mes</div>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:24px">12 cuotas · Total $12,000 · Delivery en 4 semanas</div>
+            <div style="background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--green);margin-bottom:24px">
+                ✅ El sistema entra en producción en el mes 1.<br>Las cuotas 2–12 pagan una herramienta que ya está generando valor.
+            </div>
+            <a href="mailto:rodrigo.vivares@it4w.net?subject=DIXA Deal Analyzer - Quiero arrancar" class="demo-btn">Agendar Kick-off →</a>
+        </div>
+        <div>
+            <ul class="invest-perks" style="gap:10px">
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 1 (Sem 1–2):</strong> Dashboard ARV + Comps + Go/No-Go</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 1 (cont.):</strong> Estimador de costos de obra parametrizado</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 2 (Sem 3):</strong> Pipeline de permisos por condado</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 2 (cont.):</strong> Mapa interactivo + ZIP scoring + ranking</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 3 (Sem 4):</strong> Agente IA conversacional (GPT-4)</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Fase 3 (cont.):</strong> Reportes PDF automáticos + Alertas ZIP</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Post-entrega:</strong> SLA de uptime + 60 días soporte incluido</li>
+                <li style="font-size:14px"><strong style="color:var(--text)">Activo propio:</strong> Código fuente entregado a DIXA</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Payment timeline -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:24px">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:16px">📅 Cronograma de pagos</div>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:6px">
+            <div style="background:linear-gradient(135deg,rgba(201,169,97,.25),rgba(201,169,97,.1));border:1px solid rgba(201,169,97,.4);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--accent);font-weight:700">MES 1</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Kick-off</div>
+            </div>
+            <div style="background:linear-gradient(135deg,rgba(96,165,250,.15),rgba(96,165,250,.05));border:1px solid rgba(96,165,250,.3);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--blue);font-weight:700">MES 2</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--green);margin-top:2px">✅ Live</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 3</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 4</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 5</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 6</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 7</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 8</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 9</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 10</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 11</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px">Usando</div>
+            </div>
+            <div style="background:rgba(17,22,48,.6);border:1px solid var(--border);border-radius:6px;padding:10px 6px;text-align:center">
+                <div style="font-size:10px;color:var(--muted);font-weight:700">MES 12</div>
+                <div style="font-size:12px;color:var(--text);font-weight:600;margin-top:2px">$1.000</div>
+                <div style="font-size:9px;color:var(--accent);margin-top:2px">🏁 Fin</div>
+            </div>
+        </div>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted)">El sistema está en producción desde el <strong style="color:var(--text)">Mes 2</strong>. Las cuotas 2 a 12 son pagos por una herramienta que ya está operando y generando valor real en cada deal analizado.</div>
+    </div>
+
+    <div class="invest-note">
+        <strong>📋 Costos operativos mensuales de APIs (a cargo de DIXA, no incluidos en las cuotas):</strong>
+        <br><br>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0">
+            <div style="background:rgba(10,14,39,.5);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">HouseCanary Pro</div>
+                <div style="font-size:18px;font-weight:700;color:var(--accent)">$79</div>
+                <div style="font-size:11px;color:var(--muted)">plan mensual fijo</div>
+            </div>
+            <div style="background:rgba(10,14,39,.5);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Zillow Bridge</div>
+                <div style="font-size:18px;font-weight:700;color:var(--accent)">$0</div>
+                <div style="font-size:11px;color:var(--muted)">incluido con licencia broker</div>
+            </div>
+            <div style="background:rgba(10,14,39,.5);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Permisos FL</div>
+                <div style="font-size:18px;font-weight:700;color:var(--accent)">$0</div>
+                <div style="font-size:11px;color:var(--muted)">Miami-Dade API pública</div>
+            </div>
+            <div style="background:rgba(10,14,39,.5);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">OpenAI GPT-4</div>
+                <div style="font-size:18px;font-weight:700;color:var(--accent)">~$30</div>
+                <div style="font-size:11px;color:var(--muted)">uso normal ~20 chats/mes</div>
+            </div>
+        </div>
+        <strong>Total estimado de APIs</strong> para uso normal de Hernán (20–50 análisis/mes): <strong style="color:var(--accent)">~$110 USD/mes</strong>. El caché inteligente del sistema evita llamadas repetidas al mismo predio, manteniendo el costo bajo.
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- ROI & BUILD VS BUY -->
+<div class="container" id="roi">
+    <div class="sec-eyebrow">06 · ROI & Benchmark de Mercado</div>
+    <div class="sec-title">¿Qué retorno tiene esta inversión?</div>
+    <div class="sec-lead">Antes de proponer una solución custom, investigamos el mercado para ver si existe algo que cubra las necesidades de Hernán. El resultado es claro: no existe. Y el ROI de construirlo habla por sí solo.</div>
+
+    <!-- ROI hero stats -->
+    <div class="roi-hero">
+        <div>
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px">Payback period estimado</div>
+            <div class="roi-stat-big">2–3<br><span style="font-size:32px">semanas</span></div>
+            <div class="roi-stat-label">Basado en 40 deals analizados/año a $350/hr de costo efectivo del tiempo de Hernán</div>
+            <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:14px;text-align:center">
+                    <div style="font-size:22px;font-weight:700;color:var(--accent)">2–4 hs</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:3px">ahorradas por deal analizado</div>
+                </div>
+                <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:14px;text-align:center">
+                    <div style="font-size:22px;font-weight:700;color:var(--green)">$312K</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:3px">beneficio anual estimado (escenario realista)</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px">Proyección ROI por escenario</div>
+            <table class="roi-table">
+                <thead>
+                    <tr><th>Escenario</th><th>Deals/año</th><th>Beneficio anual</th><th>ROI año 1</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Conservador</td><td>20</td><td>$105,000</td><td class="highlight">688%</td></tr>
+                    <tr><td>Realista</td><td>40</td><td>$312,000</td><td class="highlight">2,243%</td></tr>
+                    <tr><td>Activo</td><td>60+</td><td>$500,000+</td><td class="highlight">&gt;3,500%</td></tr>
+                </tbody>
+            </table>
+            <div style="font-size:11px;color:var(--muted);margin-top:10px">* Incluye: tiempo ahorrado en análisis, un deal malo evitado/año, y un deal adicional encontrado vía ZIP scoring. Metodología disponible a solicitud.</div>
+        </div>
+    </div>
+
+    <!-- Build vs Buy -->
+    <div style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px">¿Por qué no simplemente comprar un SaaS?</div>
+    <div style="font-size:15px;color:var(--muted);margin-bottom:24px;max-width:700px">Investigamos 10+ plataformas del mercado (PropStream, HouseCanary, ATTOM, Reonomy, Privy, DealMachine, Zonda, y otras). Ninguna cubre más del 55% de los requerimientos específicos de Hernán.</div>
+
+    <!-- Competitor table -->
+    <table class="competitor-table">
+        <thead>
+            <tr>
+                <th>Plataforma</th>
+                <th>Precio/mes</th>
+                <th>Comps luxury</th>
+                <th>Costo de obra</th>
+                <th>Permisos FL</th>
+                <th>IA chat</th>
+                <th>ZIP scoring</th>
+                <th>Cobertura</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>PropStream</strong></td>
+                <td>$99–$699</td>
+                <td>⚠️ Parcial</td>
+                <td>⚠️ Básico</td>
+                <td>⚠️ Irregular</td>
+                <td>⚠️ Limitado</td>
+                <td>⚠️ Básico</td>
+                <td class="pct pct-yellow">~45%</td>
+            </tr>
+            <tr>
+                <td><strong>HouseCanary</strong></td>
+                <td>$500–$2,000+</td>
+                <td>✅ Excelente</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td class="pct pct-red">~30%</td>
+            </tr>
+            <tr>
+                <td><strong>Privy</strong></td>
+                <td>$47–$149</td>
+                <td>⚠️ No luxury</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td>⚠️ Básico</td>
+                <td class="pct pct-red">~25%</td>
+            </tr>
+            <tr>
+                <td><strong>DealMachine</strong></td>
+                <td>$99–$232</td>
+                <td>⚠️ Parcial</td>
+                <td>❌ No</td>
+                <td>❌ No</td>
+                <td>⚠️ Básico</td>
+                <td>⚠️ Básico</td>
+                <td class="pct pct-red">~35%</td>
+            </tr>
+            <tr>
+                <td><strong>Reonomy</strong></td>
+                <td>$400–$1,000+</td>
+                <td>❌ Comercial</td>
+                <td>❌ No</td>
+                <td>⚠️ Comercial</td>
+                <td>❌ No</td>
+                <td>⚠️ CRE solo</td>
+                <td class="pct pct-red">~20%</td>
+            </tr>
+            <tr style="background:linear-gradient(90deg,rgba(201,169,97,.08),transparent)">
+                <td><strong style="color:var(--accent)">DIXA Deal Analyzer</strong></td>
+                <td><strong style="color:var(--accent)">$1,000/mes × 12</strong></td>
+                <td>✅ Calibrado luxury FL</td>
+                <td>✅ Parametrizado FL</td>
+                <td>✅ MDC live + roadmap</td>
+                <td>✅ GPT-4 nativo</td>
+                <td>✅ ZIP heat scoring</td>
+                <td class="pct pct-green">~95%</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Build vs Buy cards -->
+    <div class="build-buy-grid">
+        <div class="bb-card bad">
+            <div style="font-size:22px;margin-bottom:8px">🧩</div>
+            <div class="bb-title" style="color:var(--red)">Stack de SaaS fragmentado</div>
+            <div class="bb-price" style="color:var(--red)">$2,850–$5,000</div>
+            <div class="bb-sub">/mes · $34K–$60K/año · sin integración</div>
+            <ul class="bb-items">
+                <li class="bad-item">5+ herramientas sin workflow unificado</li>
+                <li class="bad-item">Datos en silos (el problema original persiste)</li>
+                <li class="bad-item">Sin calibración para luxury South FL</li>
+                <li class="bad-item">Sin permisos individuales por ZIP</li>
+                <li class="bad-item">Zonda solo: $2,000–$3,500/mes</li>
+                <li class="bad-item">Vendor lock-in, sin código propio</li>
+                <li class="bad-item">Costo a 3 años: +$102,000</li>
+            </ul>
+        </div>
+        <div class="bb-card good">
+            <div style="font-size:22px;margin-bottom:8px">🏗️</div>
+            <div class="bb-title" style="color:var(--green)">DIXA Deal Analyzer (custom)</div>
+            <div class="bb-price" style="color:var(--green)">$1,000</div>
+            <div class="bb-sub">/mes × 12 · Total $12,000 · activo propio</div>
+            <ul class="bb-items">
+                <li class="good-item">Un solo dashboard, workflow integrado</li>
+                <li class="good-item">ARV + costos + permisos + IA en una pantalla</li>
+                <li class="good-item">Calibrado para luxury $500K–$3M en South FL</li>
+                <li class="good-item">Miami-Dade live · Broward/PB en roadmap</li>
+                <li class="good-item">GPT-4 con contexto completo del deal</li>
+                <li class="good-item">Código fuente entregado a DIXA</li>
+                <li class="good-item">Costo a 3 años: $16,800 (vs $102K+ en SaaS)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:18px 24px;font-size:14px;color:var(--muted);line-height:1.75">
+        <strong style="color:var(--green)">📊 Conclusión del análisis de mercado:</strong> El nicho luxury developer ($500K–$3M, South Florida, construcción+permisos+IA integrados) está <strong style="color:var(--text)">genuinamente desatendido</strong> por el mercado SaaS actual. Todos los competidores están calibrados para flippers de $100K–$400K o para real estate comercial enterprise. <strong style="color:var(--text)">El custom build no es el plan B — es la única opción viable para el uso case específico de Hernán.</strong>
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- POR QUÉ -->
+<div class="container" id="porque">
+    <div class="sec-eyebrow">07 · ¿Por qué ahora?</div>
+    <div class="sec-title">El momento de construir es este</div>
+    <div class="sec-lead">El mercado de Hallandale Beach y sur de Florida está activo. Cada deal que tarda en analizarse es una ventana que se cierra. La ventaja competitiva se construye con mejor data, más rápido que la competencia.</div>
+
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="why-icon">⚡</div>
+            <div>
+                <div class="why-title">Velocidad de decisión</div>
+                <div class="why-desc">60 segundos vs. 3 horas. El sistema elimina el cuello de botella del análisis manual y permite a Hernán procesar más deals en el mismo tiempo.</div>
+            </div>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">��</div>
+            <div>
+                <div class="why-title">Datos, no intuición</div>
+                <div class="why-desc">El Go/No-Go basado en margen calculado reduce el riesgo de entrar en deals con spreads insuficientes o en mercados saturados.</div>
+            </div>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">🏆</div>
+            <div>
+                <div class="why-title">Ventaja sobre la competencia</div>
+                <div class="why-desc">Muy pocos developers independientes en FL tienen este nivel de automatización. Dixa tendría una herramienta que compite con operadores mucho más grandes.</div>
+            </div>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">📈</div>
+            <div>
+                <div class="why-title">Activo, no gasto</div>
+                <div class="why-desc">A diferencia de una suscripción a Zonda o CoStar, el Deal Analyzer es un activo propio de Dixa: entrenado con su historial, configurado para su modelo de negocio.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container"><div class="divider"></div></div>
+
+<!-- NEXT STEPS -->
+<div class="container" id="pasos">
+    <div class="sec-eyebrow">08 · Próximos Pasos</div>
+    <div class="sec-title">De esta propuesta al primer entregable</div>
+    <div class="sec-lead">El proceso es simple y sin fricciones. En la primera semana ya tenés datos reales fluyendo al dashboard.</div>
+
+    <div class="steps-row">
+        <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-title">Kick-off &amp; Scope</div>
+            <div class="step-desc">Reunión de alineación: confirmar scope de Fase 1, accesos a APIs, y criterios del modelo Go/No-Go de Hernán.</div>
+        </div>
+        <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-title">Contrato &amp; Setup</div>
+            <div class="step-desc">Firma del acuerdo, primera cuota ($1,000), setup del entorno de desarrollo y cuentas de API. Las 11 cuotas restantes se debitan mensualmente.</div>
+        </div>
+        <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-title">Sprint de Desarrollo</div>
+            <div class="step-desc">Desarrollo iterativo con demos semanales. Hernán ve el progreso y puede ajustar en tiempo real. Entrega en 4 semanas.</div>
+        </div>
+        <div class="step">
+            <div class="step-num">04</div>
+            <div class="step-title">Go Live &amp; Onboarding</div>
+            <div class="step-desc">Entrega del sistema en producción, sesión de onboarding, documentación y 30 días de soporte incluidos.</div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section" id="cta">
+    <h2>¿Arrancamos?</h2>
+    <p>El prototipo ya existe. El stack técnico está validado. El único paso que falta es el primero.</p>
+    <a href="mailto:rodrigo.vivares@it4w.net?subject=DIXA Deal Analyzer - Quiero arrancar" class="cta-btn">Agendar Reunión de Kick-off</a>
+    <div class="cta-contact">
+        Contacto directo: <a href="mailto:rodrigo.vivares@it4w.net">rodrigo.vivares@it4w.net</a> · <a href="https://www.it4w.net" target="_blank">www.it4w.net</a>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:24px;max-width:700px;margin:0 auto">
+        <!-- IT4W Logo -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:5px">IT4W</div>
+            <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted)">Information Technology 4 Work</div>
+        </div>
+
+        <!-- Contact card -->
+        <div style="background:rgba(26,31,58,.8);border:1px solid var(--border);border-radius:12px;padding:24px 40px;text-align:center;width:100%">
+            <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px">Rodrigo Vivares</div>
+            <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:16px">Sales Representative</div>
+            <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
+                <a href="mailto:rodrigo.vivares@it4w.net" style="font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s" onmouseover="this.style.color='#c9a961'" onmouseout="this.style.color='#8b91b0'">
+                    ✉️ rodrigo.vivares@it4w.net
+                </a>
+                <a href="https://www.it4w.net" target="_blank" style="font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s" onmouseover="this.style.color='#c9a961'" onmouseout="this.style.color='#8b91b0'">
+                    🌐 www.it4w.net
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Esta propuesta es confidencial y fue preparada exclusivamente para Hernán · DIXA Real Estate · Mayo 2026.<br>
+            Los costos de APIs de terceros son estimados y pueden variar. Precios de desarrollo cotizados en USD.
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
